@@ -1,7 +1,6 @@
 import { createServer, defineInstance } from "prool";
 import { execa } from "./execa/index.js";
 import { toArgs } from "./utils/index.js";
-import fs from "node:fs";
 
 const stripAnsi = (str: string) => str.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, "");
 
