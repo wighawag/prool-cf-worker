@@ -162,7 +162,7 @@ export const wranglerDev = defineInstance(
 
 export function createWranglerDevServer(parameters: {
   binary?: string;
-  poolId: string;
+  poolId: number;
   port?: number;
   host?: string;
 }) {
