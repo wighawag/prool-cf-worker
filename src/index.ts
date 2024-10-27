@@ -9,103 +9,113 @@ type BinaryParameters = {
   binary?: string;
 };
 
-export type WranglerDevParameters = BinaryParameters & {
-  /** Name of the worker */
-  name?: string;
-
-  /** Date to use for compatibility checks */
-  compatibilityDate?: string;
-
-  /** Flags to use for compatibility checks */
-  compatibilityFlags?: string[];
-
-  /** Use the latest version of the worker runtime */
-  latest?: boolean;
-
-  /** Static assets to be served. Replaces Workers Sites. */
-  assets?: string;
-
-  /** Skip internal build steps and directly deploy script */
-  noBundle?: boolean;
-
-  /** IP address to listen on */
-  ip?: string;
-
-  /** Port to listen on */
-  port?: number;
-
-  /** Port for devtools to connect to */
-  inspectorPort?: number;
-
-  /** Routes to upload */
-  routes?: string[];
-
-  /** Host to forward requests to, defaults to the zone of project */
-  host?: string;
-
-  /** Protocol to listen to requests on, defaults to http. */
-  localProtocol?: "http" | "https";
-
-  /** Path to a custom certificate key */
-  httpsKeyPath?: string;
-
-  /** Path to a custom certificate */
-  httpsCertPath?: string;
-
-  /** Host to act as origin in local mode, defaults to dev.host or route */
-  localUpstream?: string;
-
-  /** Protocol to forward requests to host on, defaults to https. */
-  upstreamProtocol?: "http" | "https";
-
-  /** A key-value pair to be injected into the script as a variable */
-  var?: string[];
-
-  /** A key-value pair to be substituted in the script */
-  define?: string[];
-
-  /** A module pair to be substituted in the script */
-  alias?: string[];
-
-  /** The function that is called for each JSX element */
-  jsxFactory?: string;
-
-  /** The function that is called for each JSX fragment */
-  jsxFragment?: string;
-
-  /** Path to a custom tsconfig.json file */
-  tsconfig?: string;
-
-  /** Run on the global Cloudflare network with access to production resources */
-  remote?: boolean;
-
-  /** Minify the script */
-  minify?: boolean;
-
-  /** Enable Node.js compatibility */
-  nodeCompat?: boolean;
-
-  /** Specify directory to use for local persistence (defaults to .wrangler/state) */
-  persistTo?: string;
-
-  /** Auto reload HTML pages when change is detected in local mode */
-  liveReload?: boolean;
-
-  /** Test scheduled events by visiting /__scheduled in browser */
-  testScheduled?: boolean;
-
-  /** Specify logging level */
-  logLevel?: "debug" | "info" | "log" | "warn" | "error" | "none";
-
-  /** Show interactive dev session (defaults to true if the terminal supports interactivity) */
-  showInteractiveDevSession?: boolean;
-
-  /** Use the experimental DevEnv instantiation (unified across wrangler dev and unstable_dev) */
-  experimentalDevEnv?: boolean;
-
-  /** Use the experimental file based dev registry for multi-worker development */
-  experimentalRegistry?: boolean;
+type GlobalParameters = {
+  /** Experimental: support wrangler.json  */
+  experimentalJsonConfig?: boolean;
+  /** Path to .toml configuration file */
+  config?: string;
+  /** Environment to use for operations and .env files */
+  env?: string;
 };
+
+export type WranglerDevParameters = BinaryParameters &
+  GlobalParameters & {
+    /** Name of the worker */
+    name?: string;
+
+    /** Date to use for compatibility checks */
+    compatibilityDate?: string;
+
+    /** Flags to use for compatibility checks */
+    compatibilityFlags?: string[];
+
+    /** Use the latest version of the worker runtime */
+    latest?: boolean;
+
+    /** Static assets to be served. Replaces Workers Sites. */
+    assets?: string;
+
+    /** Skip internal build steps and directly deploy script */
+    noBundle?: boolean;
+
+    /** IP address to listen on */
+    ip?: string;
+
+    /** Port to listen on */
+    port?: number;
+
+    /** Port for devtools to connect to */
+    inspectorPort?: number;
+
+    /** Routes to upload */
+    routes?: string[];
+
+    /** Host to forward requests to, defaults to the zone of project */
+    host?: string;
+
+    /** Protocol to listen to requests on, defaults to http. */
+    localProtocol?: "http" | "https";
+
+    /** Path to a custom certificate key */
+    httpsKeyPath?: string;
+
+    /** Path to a custom certificate */
+    httpsCertPath?: string;
+
+    /** Host to act as origin in local mode, defaults to dev.host or route */
+    localUpstream?: string;
+
+    /** Protocol to forward requests to host on, defaults to https. */
+    upstreamProtocol?: "http" | "https";
+
+    /** A key-value pair to be injected into the script as a variable */
+    var?: string[];
+
+    /** A key-value pair to be substituted in the script */
+    define?: string[];
+
+    /** A module pair to be substituted in the script */
+    alias?: string[];
+
+    /** The function that is called for each JSX element */
+    jsxFactory?: string;
+
+    /** The function that is called for each JSX fragment */
+    jsxFragment?: string;
+
+    /** Path to a custom tsconfig.json file */
+    tsconfig?: string;
+
+    /** Run on the global Cloudflare network with access to production resources */
+    remote?: boolean;
+
+    /** Minify the script */
+    minify?: boolean;
+
+    /** Enable Node.js compatibility */
+    nodeCompat?: boolean;
+
+    /** Specify directory to use for local persistence (defaults to .wrangler/state) */
+    persistTo?: string;
+
+    /** Auto reload HTML pages when change is detected in local mode */
+    liveReload?: boolean;
+
+    /** Test scheduled events by visiting /__scheduled in browser */
+    testScheduled?: boolean;
+
+    /** Specify logging level */
+    logLevel?: "debug" | "info" | "log" | "warn" | "error" | "none";
+
+    /** Show interactive dev session (defaults to true if the terminal supports interactivity) */
+    showInteractiveDevSession?: boolean;
+
+    /** Use the experimental DevEnv instantiation (unified across wrangler dev and unstable_dev) */
+    experimentalDevEnv?: boolean;
+
+    /** Use the experimental file based dev registry for multi-worker development */
+    experimentalRegistry?: boolean;
+  };
 export const wranglerDev = defineInstance(
   (parameters: WranglerDevParameters) => {
     const { binary = "pnpm", ...args } = parameters || {};
