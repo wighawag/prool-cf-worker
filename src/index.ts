@@ -162,18 +162,22 @@ export const wranglerDev = defineInstance(
 
 export function createWranglerDevServer(parameters: {
   binary?: string;
-  poolId: number;
-  port?: number;
-  host?: string;
+  urlWithPoolId: string;
 }) {
-  const port = parameters.port || 8787;
-  const rpcUrl = {
-    http: `${parameters.host || "http://127.0.0.1"}:${port}/${parameters.poolId}`,
-  } as const;
-
+  const urlObject = new URL(parameters.urlWithPoolId);
+  const portString = urlObject.port;
+  const portAsNumber = parseInt(portString);
+  const port = isNaN(portAsNumber) ? 80 : portAsNumber;
+  const pathname = urlObject.pathname.slice(1);
+  const poolId = parseInt(pathname);
+  if (isNaN(poolId)) {
+    throw new Error(
+      `url need to end with poolId as pathname like for example so http://localhost:8787/<poolId>`
+    );
+  }
   return {
     async restart() {
-      await fetch(`${rpcUrl.http}/restart`);
+      await fetch(`${parameters.urlWithPoolId}/restart`);
     },
     async start() {
       return await createServer({
