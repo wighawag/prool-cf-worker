@@ -10,6 +10,7 @@ type BinaryParameters = {
   binary?: string;
   redirectToFile?: string;
   onReadyCommands?: string[];
+  onStopCommands?: string[];
 };
 
 type GlobalParameters = {
@@ -125,6 +126,7 @@ export const wranglerDev = defineInstance(
       binary = "pnpm",
       redirectToFile,
       onReadyCommands,
+      onStopCommands,
       ...args
     } = parameters || {};
 
@@ -181,6 +183,14 @@ export const wranglerDev = defineInstance(
         });
       },
       async stop() {
+        if (onStopCommands) {
+          for (const onStopCommand of onStopCommands) {
+            const [bin, ...args] = onStopCommand.split(" ");
+            try {
+              await execa`${bin} ${args}`;
+            } catch {}
+          }
+        }
         await process.stop();
       },
     };
