@@ -1,12 +1,14 @@
 import { createServer, defineInstance } from "prool";
-import { execa } from "prool/processes";
+import { execa } from "./execa/index.js";
 import { toArgs } from "./utils/index.js";
+import fs from "node:fs";
 
 const stripAnsi = (str: string) => str.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, "");
 
 type BinaryParameters = {
   /* command to use to launch, default to `wrangler dev` */
   binary?: string;
+  redirectToFile?: string;
 };
 
 type GlobalParameters = {
@@ -118,10 +120,13 @@ export type WranglerDevParameters = BinaryParameters &
   };
 export const wranglerDev = defineInstance(
   (parameters: WranglerDevParameters) => {
-    const { binary = "pnpm", ...args } = parameters || {};
+    const { binary = "pnpm", redirectToFile, ...args } = parameters || {};
 
     const name = "wrangler";
-    const process = execa({ name });
+    const process = execa({
+      name,
+      redirectToFile: redirectToFile ? { file: redirectToFile } : undefined,
+    });
 
     return {
       _internal: {
@@ -144,7 +149,7 @@ export const wranglerDev = defineInstance(
           // Resolve when the process is listening via a "Listening on" message.
           resolver({ process, reject, resolve }) {
             process.stdout.on("data", (data: any) => {
-              // console.log(`DATA`, data.toString());
+              // console.log(`DATA ${data.toString()}`);
               const message = stripAnsi(data.toString());
               if (message.includes("Ready on")) {
                 // console.log("DONE");
@@ -153,12 +158,8 @@ export const wranglerDev = defineInstance(
             });
 
             process.stderr.on("data", (err: any) => {
-              // console.log("REJECT", err);
+              // console.log(`REJECT ${err.toString()}`);
               reject(err);
-            });
-
-            process.then(() => {
-              // console.log("DEAD?");
             });
           },
         });
