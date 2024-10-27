@@ -1,6 +1,7 @@
 import { createServer, defineInstance } from "prool";
-import { execa } from "./execa/index.js";
+import { setupExeca } from "./execa/index.js";
 import { toArgs } from "./utils/index.js";
+import { execa } from "execa";
 
 const stripAnsi = (str: string) => str.replace(/\x1B[[(?);]{0,2}(;?\d)*./g, "");
 
@@ -8,6 +9,7 @@ type BinaryParameters = {
   /* command to use to launch, default to `wrangler dev` */
   binary?: string;
   redirectToFile?: string;
+  onReadyCommands?: string[];
 };
 
 type GlobalParameters = {
@@ -119,10 +121,15 @@ export type WranglerDevParameters = BinaryParameters &
   };
 export const wranglerDev = defineInstance(
   (parameters: WranglerDevParameters) => {
-    const { binary = "pnpm", redirectToFile, ...args } = parameters || {};
+    const {
+      binary = "pnpm",
+      redirectToFile,
+      onReadyCommands,
+      ...args
+    } = parameters || {};
 
     const name = "wrangler";
-    const process = execa({
+    const process = setupExeca({
       name,
       redirectToFile: redirectToFile ? { file: redirectToFile } : undefined,
     });
@@ -147,11 +154,21 @@ export const wranglerDev = defineInstance(
           ...options,
           // Resolve when the process is listening via a "Listening on" message.
           resolver({ process, reject, resolve }) {
-            process.stdout.on("data", (data: any) => {
+            process.stdout.on("data", async (data: any) => {
               // console.log(`DATA ${data.toString()}`);
               const message = stripAnsi(data.toString());
               if (message.includes("Ready on")) {
                 // console.log("DONE");
+                if (onReadyCommands) {
+                  for (const onReadyCommand of onReadyCommands) {
+                    const [bin, ...args] = onReadyCommand.split(" ");
+                    try {
+                      await execa`${bin} ${args}`;
+                    } catch (err: any) {
+                      return reject(err.toString());
+                    }
+                  }
+                }
                 resolve();
               }
             });

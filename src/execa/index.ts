@@ -30,7 +30,7 @@ export type ExecaProcess = {
 };
 export type ExecaReturnType = ExecaProcess;
 
-export function execa(parameters: ExecaParameters): ExecaReturnType {
+export function setupExeca(parameters: ExecaParameters): ExecaReturnType {
   const { name, redirectToFile } = parameters;
 
   const errorMessages: string[] = [];
