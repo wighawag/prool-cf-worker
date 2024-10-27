@@ -1,6 +1,6 @@
 {
   "name": "prool-cf-worker",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "prool support for cloudflare workers",
   "type": "module",
   "main": "./dist/index.js",

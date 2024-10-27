@@ -160,11 +160,11 @@ export const wranglerDev = defineInstance(
   }
 );
 
-export function createWranglerDevServer(parameters: {
-  binary?: string;
-  urlWithPoolId: string;
-}) {
-  const urlObject = new URL(parameters.urlWithPoolId);
+export function createWranglerDevServer(
+  urlWithPoolId: string,
+  parameters?: WranglerDevParameters
+) {
+  const urlObject = new URL(urlWithPoolId);
   const portString = urlObject.port;
   const portAsNumber = parseInt(portString);
   const port = isNaN(portAsNumber) ? 80 : portAsNumber;
@@ -177,11 +177,11 @@ export function createWranglerDevServer(parameters: {
   }
   return {
     async restart() {
-      await fetch(`${parameters.urlWithPoolId}/restart`);
+      await fetch(`${urlWithPoolId}/restart`);
     },
     async start() {
       return await createServer({
-        instance: wranglerDev({ binary: parameters.binary }),
+        instance: wranglerDev(parameters || {}),
         port,
       }).start();
     },
