@@ -138,6 +138,12 @@ export const wranglerDev = defineInstance(
       redirectToFile: redirectToFile ? { file: redirectToFile } : undefined,
     });
 
+    const portProvided = args.port ?? 8787;
+
+    // This will let us identify the worker and we use the {PORT} as the identifier in the calling context
+    // this can be used to use storage for specific instance
+    let portAssigned = portProvided;
+
     return {
       _internal: {
         args,
@@ -147,10 +153,13 @@ export const wranglerDev = defineInstance(
       },
       host: args.host ?? "localhost",
       name,
-      port: args.port ?? 8787,
-      async start({ port = args.port }, options) {
+      port: portProvided,
+      async start({ port = portProvided }, options) {
+        portAssigned = port;
         const [actualBinary, ...moreArgs] = binary.split(" ");
-        const argsList = toArgs({ ...args, port });
+        const argsList = toArgs({ ...args, port }).map((v) =>
+          v.replaceAll("{PORT}", portAssigned.toString())
+        );
         const commandArgs = moreArgs.concat(argsList);
 
         if (binaryLog) {
@@ -168,13 +177,23 @@ export const wranglerDev = defineInstance(
                   console.log("Ready");
                 }
                 if (onReadyCommands) {
+                  const commands = onReadyCommands.map((v) =>
+                    v.replaceAll("{PORT}", portAssigned.toString())
+                  );
                   if (binaryLog) {
                     console.log("executing onReadyCommands...");
                   }
-                  for (const onReadyCommand of onReadyCommands) {
+                  for (const onReadyCommand of commands) {
                     const [bin, ...args] = onReadyCommand.split(" ");
                     try {
-                      await execa`${bin} ${args}`;
+                      if (binaryLog) {
+                        await execa({
+                          stdout: ["pipe", "inherit"],
+                          stderr: ["pipe", "inherit"],
+                        })`${bin} ${args}`;
+                      } else {
+                        await execa`${bin} ${args}`;
+                      }
                     } catch (err: any) {
                       return reject(err.toString());
                     }
@@ -201,13 +220,23 @@ export const wranglerDev = defineInstance(
           console.log("Stopped");
         }
         if (onStopCommands) {
+          const commands = onStopCommands.map((v) =>
+            v.replaceAll("{PORT}", portAssigned.toString())
+          );
           if (binaryLog) {
             console.log("executing onStopCommands...");
           }
-          for (const onStopCommand of onStopCommands) {
+          for (const onStopCommand of commands) {
             const [bin, ...args] = onStopCommand.split(" ");
             try {
-              await execa`${bin} ${args}`;
+              if (binaryLog) {
+                await execa({
+                  stdout: ["pipe", "inherit"],
+                  stderr: ["pipe", "inherit"],
+                })`${bin} ${args}`;
+              } else {
+                await execa`${bin} ${args}`;
+              }
             } catch {}
           }
         }
