@@ -11,6 +11,7 @@ type BinaryParameters = {
   redirectToFile?: string;
   onReadyCommands?: string[];
   onStopCommands?: string[];
+  binaryLog?: boolean;
 };
 
 type GlobalParameters = {
@@ -127,6 +128,7 @@ export const wranglerDev = defineInstance(
       redirectToFile,
       onReadyCommands,
       onStopCommands,
+      binaryLog,
       ...args
     } = parameters || {};
 
@@ -151,7 +153,9 @@ export const wranglerDev = defineInstance(
         const argsList = toArgs({ ...args, port });
         const commandArgs = moreArgs.concat(argsList);
 
-        // console.log(`EXECUTING: ${actualBinary} ${commandArgs.join(" ")}`);
+        if (binaryLog) {
+          console.log(`EXECUTING: ${actualBinary} ${commandArgs.join(" ")}`);
+        }
         return await process.start(($) => $`${actualBinary} ${commandArgs}`, {
           ...options,
           // Resolve when the process is listening via a "Listening on" message.
@@ -160,8 +164,13 @@ export const wranglerDev = defineInstance(
               // console.log(`DATA ${data.toString()}`);
               const message = stripAnsi(data.toString());
               if (message.includes("Ready on")) {
-                // console.log("DONE");
+                if (binaryLog) {
+                  console.log("Ready");
+                }
                 if (onReadyCommands) {
+                  if (binaryLog) {
+                    console.log("executing onReadyCommands...");
+                  }
                   for (const onReadyCommand of onReadyCommands) {
                     const [bin, ...args] = onReadyCommand.split(" ");
                     try {
@@ -171,19 +180,30 @@ export const wranglerDev = defineInstance(
                     }
                   }
                 }
+                if (binaryLog) {
+                  console.log("Resolving...");
+                }
                 resolve();
               }
             });
 
             process.stderr.on("data", (err: any) => {
-              // console.log(`REJECT ${err.toString()}`);
+              if (binaryLog) {
+                console.log(`ERROR ${err.toString()}`);
+              }
               reject(err);
             });
           },
         });
       },
       async stop() {
+        if (binaryLog) {
+          console.log("Stopped");
+        }
         if (onStopCommands) {
+          if (binaryLog) {
+            console.log("executing onStopCommands...");
+          }
           for (const onStopCommand of onStopCommands) {
             const [bin, ...args] = onStopCommand.split(" ");
             try {
